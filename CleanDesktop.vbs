@@ -43,7 +43,19 @@ arrayOfApps = Array( _
 					Array("IDE", "arduino","notepad++", "git bash", "unity", "eclipse"), _ 
 					Array("Web Browser", "google chrome","chromium", "edge", "microsoft edge", "brave", "firefox", "opera", "safari", "internet explorer") _ 
 					)
-
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					'=================================================================
+'-------------------------------------- No need to edit past here ------------------------------------
+					'=================================================================
 ' Main Body
 'Sets up a file system object and finds out what directory we are in
 Set FSO = CreateObject("Scripting.FileSystemObject")	
