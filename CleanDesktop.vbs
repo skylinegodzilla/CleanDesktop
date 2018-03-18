@@ -16,7 +16,6 @@
 'Also Now supports Hybrid Directory's (directory's that are made up of two or more other directory's) like desktop
 'But you will have to populate the Hybrid Array yourself. It has Desktop there as a example
 
-
 'TODO:
 '	Make organising apps more efficient by searching for a keyword in its name rather then the whole name itself
 
