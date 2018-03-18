@@ -8,8 +8,9 @@
 		'for example Desktop is a hybrid Dorectorey made up of C:\User\Username\Desktop and C:\User\Public\Destop. 
 		'the script currentley onley organises files in one of the directoreys
 '	Make organising apps more efficent by searching for a keyword in its name rather then the whole name itself
+
 'Changelog:
-'	1.0.1: Fix issue where if there is a . in the name file it throws the file into the unknowen folder
+'	1.0.1: Fixed issue where if there is a . in the name file it throws the file into the unknowen folder
 
 'MD array of Files and where they fit----------------------------------------------------------------------------------------------------------------
 'Modafy this array (arrayOfTypes) to add more types and extentions
@@ -19,7 +20,8 @@
 	'the " _ " at the end of eatch line is just how you Break and Combine Statements in VBS so the MD array is easer to read
 
 'Modafy the 2nd MD array (arrayOfApps) to organise apps in to there own folders
-					
+
+					'This Array is to organise folders by extention
 					'Array("Folder Title", "file ext","file ext"), _ 
 arrayOfTypes = Array( _ 
 					Array("Image","bmp", "jpg", "jpeg", "svg", "png", "tif", "tiff", "psd", "ai", "gif"), _ 
@@ -36,7 +38,7 @@ arrayOfTypes = Array( _
 					Array("Database", "db", "sql", "csv", "mdb", "dat"), _ 
 					Array("Font", "fnt", "fon", "otf", "ttf") _ 
 					)
-					
+					'This Array is to organise Apps by Name (and future keywords in name)
 					'Array("Folder Title", "app name","app name"), _ 
 arrayOfApps = Array( _ 
 					Array("Media App","spotify", "itunes", "vlc media player" ), _ 
@@ -48,6 +50,12 @@ arrayOfApps = Array( _
 					Array("Web Browser", "google chrome","chromium", "edge", "microsoft edge", "brave", "firefox", "opera", "safari", "internet explorer") _ 
 					)
 					
+					'This Array is grab the directoreys that make up a knowen hybrid directorey
+					'Array("Hybrid Folder Name","Directorey to other folder", "Directorey to other folder")
+ArrayOfHybridFolders = Array( _ 
+					Array("Desktop","C:\Users\Public\Desktop") _ 
+					)
+					
 					
 					'=================================================================
 '-------------------------------------- No need to edit past here ------------------------------------
@@ -57,32 +65,58 @@ arrayOfApps = Array( _
 Set FSO = CreateObject("Scripting.FileSystemObject")	
 dir = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.ScriptFullName)
 
-'Gets infomation about the current folder and its files
-Set folder = FSO.GetFolder(dir)
-Set files = folder.Files
 
-'For eatch file in the folder get the ext of the file then compear it with the arrays above to work out what catagorey of file it is then move the file into a folder of that catagory name
-For Each file in files
-	If Not file.Name = WScript.ScriptName Then 'This is to prevent moving this script during the process
-		'Unknown
-		Dim ext : ext = LCase(StripExt(file.Name))		'Finds the ext of the current file (also converts the text to lower case so that we dont have to put the same ext twice in the arrays like HTML and html for example) 
-		Dim fType : fType = FileType(ext,arrayOfTypes)		'Works out the type of file by compearing its ext to the data in the Muitidimentional array above if its a match it will return the first value of the 2nd array as the type
-		If fType = "App" Then
-			Dim fName : fName = LCase(FSO.GetBaseName(file))
-			Dim appType : appType = FileType(fName,arrayOfApps)
-			If appType = "Unknown" Then 
-				appType = "App"
+'Check if its a hybrid directorey
+Dim isHybrid : isHybrid = CheckIfHybridFolder(FSO.GetBaseName(dir))
+'if it is not a Hybrid folder then just clean the directorey
+If IsEmpty(isHybrid) Then
+	Clean(FSO.GetFolder(dir).Files)
+Else
+'Else it is a Hybrid so go through all the directoreys and clean
+	Clean(FSO.GetFolder(dir).Files) 'Clean the current part of the Hybrid Directorey first 
+	Dim hybridArray : hybridArray = isHybrid 'This is littaley just to make it less confusing to read
+	Dim i : i = 1	'setting the index to 1 as 0 is the name of the Directorey not its path
+	For i=1 to UBound(hybridArray)					'for i to the length of the hybrid array (the number of knowen directoreys that make up this hybrid directorey)
+		Clean(FSO.GetFolder(hybridArray(i)).Files)	'clean the directorey
+	Next		
+End If
+
+'The main sorting function
+Function Clean(files)
+	'For eatch file in the folder get the ext of the file then compear it with the arrays above to work out what catagorey of file it is then move the file into a folder of that catagory name
+	For Each file in files
+		If Not file.Name = WScript.ScriptName Then 'This is to prevent moving this script during the process
+			'Unknown
+			Dim ext : ext = LCase(StripExt(file.Name))		'Finds the ext of the current file (also converts the text to lower case so that we dont have to put the same ext twice in the arrays like HTML and html for example) 
+			Dim fType : fType = FileType(ext,arrayOfTypes)		'Works out the type of file by compearing its ext to the data in the Muitidimentional array above if its a match it will return the first value of the 2nd array as the type
+			If fType = "App" Then
+				Dim fName : fName = LCase(FSO.GetBaseName(file))
+				Dim appType : appType = FileType(fName,arrayOfApps)
+				If appType = "Unknown" Then 
+					appType = "App"
+				End If
+				CheckForFolder(appType)
+				file.Move(dir+"\"+appType+"\")
+			Else
+				CheckForFolder(fType)					'Checks to see if the folder to move the file to exists if not create it
+				file.Move(dir+"\"+fType+"\")			'Move the file to the folder
 			End If
-			CheckForFolder(appType)
-			file.Move(dir+"\"+appType+"\")
-		Else
-			CheckForFolder(fType)					'Checks to see if the folder to move the file to exists if not create it
-			file.Move(dir+"\"+fType+"\")			'Move the file to the folder
-		End If
-	End If	
-Next
+		End If	
+	Next
+End Function
 
-'Function to check if folder exsists--------------------------------------------------
+'Function to check if the folder is a knowen hybrid directorey and return the object if it is --------------------------------------
+Function CheckIfHybridFolder(folderName)
+	Dim isHybrid
+	For Each hybridFolder in ArrayOfHybridFolders
+		If folderName = hybridFolder(0) Then
+			isHybrid = hybridFolder
+		End If
+	Next
+	CheckIfHybridFolder = isHybrid
+End Function
+
+'Function to check if folder exsists and creates it if false--------------------------------------------------
 Function CheckForFolder(folderName)
 	Dim exists : exists = FSO.FolderExists(dir+"\"+folderName)
 	If Not exists Then
