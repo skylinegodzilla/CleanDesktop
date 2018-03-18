@@ -13,9 +13,13 @@
 'If the app is unknown what category it fits into then it is put into the app folder
 'To reorganise how the files are sorted just modify the multi dimensional arrays bellow
 
+'another change'
+
 'Also Now supports Hybrid Directory's (directory's that are made up of two or more other directory's) like desktop
 'But you will have to populate the Hybrid Array yourself. It has Desktop there as a example
 
+'This is a modafcation to the file
+'
 'TODO:
 '	Make organising apps more efficient by searching for a keyword in its name rather then the whole name itself
 
