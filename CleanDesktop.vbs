@@ -3,7 +3,11 @@
 '-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 'TODO:
-'	
+	'Fix issue when the script tryes to move a file to a folder that allreadey has a file with the same name
+	'Fix issue where some files do not move because the directorey is achaley a hybrid directory and those files are in a different location
+		'for example Desktop is a hybrid Dorectorey made up of C:\User\Username\Desktop and C:\User\Public\Destop. 
+		'the script currentley onley organises files in one of the directoreys
+'	Make organising apps more efficent by searching for a keyword in its name rather then the whole name itself
 'Changelog:
 '	1.0.1: Fix issue where if there is a . in the name file it throws the file into the unknowen folder
 
@@ -43,14 +47,6 @@ arrayOfApps = Array( _
 					Array("IDE", "arduino","notepad++", "git bash", "unity", "eclipse"), _ 
 					Array("Web Browser", "google chrome","chromium", "edge", "microsoft edge", "brave", "firefox", "opera", "safari", "internet explorer") _ 
 					)
-					
-					
-					
-					
-					
-					
-					
-					
 					
 					
 					'=================================================================
