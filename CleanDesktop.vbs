@@ -2,16 +2,34 @@
 '			CLEAN DESKTOP, Folder/Directorey Organising Script By Ben Cawley
 '-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+'Clean Desktop is a script that allows people a quick and easey way to organise there messy folders
+'Commen examples of folders that get messy are Desktops, Documents, Cloud Drives and Downloads folders
+
+'To Use
+'Just drop the script into a directorey/folder that you want organising and run the script.
+'It will sort all your files and documents in to organised sub folders
+'The folders that the files will go into is dependent on there file extention 
+'or in the case of apps and shortcuts it will organie them in to catagoreys based on the app
+'If the app is unknown what cattagorey it fits into then it is put into the app folder
+'To reorganise how the files are sorted just modafy the muiti dimentanal arays bellow
+
+'Also Now supports Hybrid Directoreys (directoreys that are made up of two or more other Directoreys) like desktop 
+'But you will have to populate the Hybrid Array yourself. It has Desktop there as a example
+
+
 'TODO:
-	'Fix issue when the script tryes to move a file to a folder that allreadey has a file with the same name
-	'Fix issue where some files do not move because the directorey is achaley a hybrid directory and those files are in a different location
-		'for example Desktop is a hybrid Dorectorey made up of C:\User\Username\Desktop and C:\User\Public\Destop. 
-		'the script currentley onley organises files in one of the directoreys
 '	Make organising apps more efficent by searching for a keyword in its name rather then the whole name itself
 
 'Changelog:
 '	1.0.1: Fixed issue where if there is a . in the name file it throws the file into the unknowen folder
+'	
+'	1.0.2: Fixed issue where some files do not move because the directorey is achaley a hybrid directory and those files are in a different location
+			'for example Desktop is a hybrid Dorectorey made up of C:\User\Username\Desktop and C:\User\Public\Destop. 
+			'the script currentley onley organises files in one of the directoreys
 
+'	1.0.3: 'Fixed issue when the script tries to move a file to a folder that allreadey has a file with the same name
+
+			
 'MD array of Files and where they fit----------------------------------------------------------------------------------------------------------------
 'Modafy this array (arrayOfTypes) to add more types and extentions
 	'Array() is a new catagory
@@ -56,7 +74,6 @@ ArrayOfHybridFolders = Array( _
 					Array("Desktop","C:\Users\Public\Desktop") _ 
 					)
 					
-					
 					'=================================================================
 '-------------------------------------- No need to edit past here ------------------------------------
 					'=================================================================
@@ -64,7 +81,6 @@ ArrayOfHybridFolders = Array( _
 'Sets up a file system object and finds out what directory we are in
 Set FSO = CreateObject("Scripting.FileSystemObject")	
 dir = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.ScriptFullName)
-
 
 'Check if its a hybrid directorey
 Dim isHybrid : isHybrid = CheckIfHybridFolder(FSO.GetBaseName(dir))
@@ -96,10 +112,12 @@ Function Clean(files)
 					appType = "App"
 				End If
 				CheckForFolder(appType)
-				file.Move(dir+"\"+appType+"\")
+				MoveFile file, dir+"\"+appType+"\"
+				'file.Move(dir+"\"+appType+"\")
 			Else
 				CheckForFolder(fType)					'Checks to see if the folder to move the file to exists if not create it
-				file.Move(dir+"\"+fType+"\")			'Move the file to the folder
+				MoveFile file, dir+"\"+fType+"\"
+				'file.Move(dir+"\"+fType+"\")			'Move the file to the folder
 			End If
 		End If	
 	Next
@@ -124,6 +142,18 @@ Function CheckForFolder(folderName)
 	End If
 End Function
 
+'Function To check for a file ----------------------------------------------------------------------------------
+Function CheckForFile(targit, destanation)
+	Dim fileInfo : fileInfo = Array("False", "FileName", "Dir")
+    For Each file in FSO.GetFolder(destanation).Files
+		if file.Name = targit.Name Then
+			fileInfo(0) = "True"
+			fileInfo(1) = file.Name
+			fileInfo(2) = destanation
+		End If
+	Next
+	CheckForFile = fileInfo
+End Function
 
 'Function to strip file name from extention -----------------------------------------
 Function StripExt(fileName)
@@ -160,4 +190,23 @@ Function FileType(fileExt, arrayGroup)
 		Next	
 	End If
 	FileType = tempType
+End Function
+
+'Function My own move file function 
+'Not to reinvent the wheel but because VBS built in Method to move files dose not handle overwriting files
+'and the coppy file method needs to know befor hand if the user wants to overwrite the file or not
+' -----------------------------------------------
+Function MoveFile(targit, destanation)
+	Dim fileExists : fileExists = CheckForFile(targit, destanation)' remove last / from destanation
+	Dim msgBoxAns
+	If fileExists(0) = "True" Then
+		msgBoxAns =	Msgbox ("WARNING!" & vbcrlf & vbcrlf & "There is already a file called " & fileExists(1) & " In the folder " & vbcrlf & fileExists(2) & vbcrlf & "Do you want to overwrite it?" ,20, "Ooh no")
+		If msgBoxAns = 6 Then
+			FSO.CopyFile targit, destanation, True
+			FSO.DeleteFile(targit)
+		End IF
+	Else
+		FSO.CopyFile targit, destanation, True
+		FSO.DeleteFile(targit)
+	End If
 End Function
