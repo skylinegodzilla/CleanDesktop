@@ -47,8 +47,8 @@ arrayOfTypes = Array( _
 					Array("Video", "h264", "h265", "vob", "mp4", "mid", "mov", "avi", "mkv", "flv", "ogg", "mp2", "m4v", "3gp", "wmv", "rv"), _
 					Array("Doc","doc", "docx", "odt", "ods", "exl", "xls", "xlxs", "txt", "ppt", "pptx", "rtf", "pdf"), _
 					Array("Music", "mp3", "aac", "midi", "aiff", "m4b", "wma", "raw", "wav", "exs", "aa", "aax"), _
-					Array("Script","ino", "py", "js", "php", "vb", "vbs", "c", "h", "c++", "cpp", "cs", "java", "class", "sh", "bat"), _
-					Array("Web", "html", "css", "xml", "asp", "jsp", "rss", "xhtml"), _
+					Array("Script","ino", "py", "js", "php", "vb", "vbs", "c", "h", "c++", "cpp", "cs", "java", "class", "sh", "bat", "rb"), _
+					Array("Web", "html", "css", "xml", "asp", "jsp", "rss", "xhtml", "url", "jason"), _
 					Array("App","exe", "run", "jar", "swf", "lnk"), _
 					Array("Compressed","pkg", "zip", "rar", "shar", "iso", "mar", "tar", "bz2", "gz", "sfark", "7z", "dmg", "rev" ), _
 					Array("Mobile","apk", "azw2", "swift"), _
@@ -60,12 +60,15 @@ arrayOfTypes = Array( _
 					'This Array is to organise Apps by Name (and future keywords in name)
 					'Array("Folder Title", "app name","app name"), _
 arrayOfApps = Array( _
-					Array("Media App","spotify", "itunes", "vlc media player" ), _
-					Array("Admin Tools","msi afterburner", "putty (64-bit)", "putty", "geforce experience", "minitool partition wizard", "windirstat"), _
-					Array("Productivity", "photoshop","open broadcaster software", "fl studio 12(64bit)", "fl studio 12", "fraps"), _
-					Array("Social", "discord"), _
-					Array("Anti Virus", "malwarebytes", "avast free antivirus", "avast safeZone browser","avast_free_antivirus_setup_online"), _
-					Array("IDE", "arduino","notepad++", "git bash", "unity", "eclipse"), _
+					Array("Media App","spotify", "itunes", "vlc", "media player" ), _
+					Array("Office", "word ", "excel", "powerpoint", "outlook", "access"), _
+					Array("Games", "minecraft","steam", "csgo", "age of empires", "ftb", "atlauncher", "nexus mod", "epic games", "move or die", "fallout", "golf", "kingdoms and castles", "worms"), _
+					Array("Admin Tools","msi afterburner", "putty", "geforce experience", "minitool partition wizard", "windirstat"), _
+					Array("Productivity", "photoshop","illustrator", "indesign","open broadcaster", "fl studio", "fraps"), _
+					Array("Social", "discord", "twitch", "facebook", "twitter"), _
+					Array("Anti Virus", "malwarebytes", "avast", "avg", "norton", "symantec"), _
+					Array("Dev Tools", "github","arduino","notepad++", "git bash", "unity", "eclipse", "atom", "visual studio", "code blocks", "code::blocks"), _
+					Array("Utiliteys", "duet", "inputmapper", "winrar"), _
 					Array("Web Browser", "google chrome","chromium", "edge", "microsoft edge", "brave", "firefox", "opera", "safari", "internet explorer") _
 					)
 
@@ -105,10 +108,10 @@ Function Clean(files)
 		If Not file.Name = WScript.ScriptName Then 'This is to prevent moving this script during the process
 			'Unknown
 			Dim ext : ext = LCase(StripExt(file.Name))		'Finds the ext of the current file (also converts the text to lower case so that we don't have to put the same ext twice in the arrays like HTML and html for example)
-			Dim fType : fType = FileType(ext,arrayOfTypes)		'Works out the type of file by compeering its ext to the data in the Multidimensional array above if its a match it will return the first value of the 2nd array as the type
+			Dim fType : fType = FileType(ext,arrayOfTypes,"absolute")		'Works out the type of file by compeering its ext to the data in the Multidimensional array above if its a match it will return the first value of the 2nd array as the type
 			If fType = "App" Then
 				Dim fName : fName = LCase(FSO.GetBaseName(file))
-				Dim appType : appType = FileType(fName,arrayOfApps)
+				Dim appType : appType = FileType(fName,arrayOfApps, "relative")
 				If appType = "Unknown" Then
 					appType = "App"
 				End If
@@ -166,7 +169,7 @@ Function StripExt(fileName)
 End Function
 
 'Function to Work out File Type or App ---------------------------------------------------------
-Function FileType(fileExt, arrayGroup)
+Function FileType(fileExt, arrayGroup, refType)
 	Dim tempType : tempType = "Unknown"
 
 	If fileExt = "NULL" Then
@@ -178,7 +181,9 @@ Function FileType(fileExt, arrayGroup)
 		For i=0 to UBound(arrayGroup)
 			Dim j : j = 0
 			For j=0 to UBound(arrayGroup(i))
-				If arrayGroup(i)(j) = fileExt Then
+
+			'If absolute refrance'
+				If refType = "absolute" And arrayGroup(i)(j) = fileExt Or refType = "relative" And InStr(fileExt, arrayGroup(i)(j)) > 0 Then 'Logic operaters for the win
 					isIn = True
 					tempType = arrayGroup(i)(0)
 					typeFound = True
